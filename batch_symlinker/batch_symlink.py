@@ -1,5 +1,6 @@
 import click
 import os
+import subprocess
 
 
 @click.command()
@@ -7,13 +8,13 @@ import os
 @click.option(
     "--src_prefix",
     type=str,
-    default='',
+    default="",
     help='Prefix of source file in command "ln -s [src] [dest]"',
 )
 @click.option(
     "--dst_prefix",
     type=str,
-    default='',
+    default="",
     help='Prefix of destination file in command "ln -s [src] [dest]"',
 )
 def batch_symlink(files, src_prefix, dst_prefix):
@@ -24,22 +25,22 @@ def batch_symlink(files, src_prefix, dst_prefix):
         errors = []
         cnt = 1
         for f in file_list:
-            cmd = "ln -s {} {}".format(
-                os.path.join(src_prefix, f), os.path.join(dst_prefix, f)
+            cp = subprocess.run(
+                ["ln", "-s", os.path.join(src_prefix, f), os.path.join(dst_prefix, f)]
             )
-            if os.system(cmd) == 0:
-                print("[{}] SUCCEED: {}".format(cnt, cmd))
+            if cp.returncode == 0:
+                print("[{}] SUCCEED: {}".format(cnt, cp.args))
             else:
                 errors.append(f)
-                print("[{}] FAILED: {}".format(cnt, cmd))
+                print("[{}] FAILED: {}".format(cnt, cp.args))
             cnt += 1
         if errors:
-            with open('errors.txt', 'w') as ef:
+            with open("errors.txt", "w") as ef:
                 for e in errors:
-                    ef.write('{}\n'.format(e))
-            print('Recorded {} errors in total.'.format(len(errors)))
+                    ef.write("{}\n".format(e))
+            print("Recorded {} errors in total.".format(len(errors)))
         else:
-            print('All done without exceptions!')
+            print("All done without exceptions!")
 
 
 if __name__ == "__main__":
